@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { supabaseConfigured } from '../../lib/supabase';
+import { problemaDeCredenciales, supabaseConfigured } from '../../lib/supabase';
 
 type Mode = 'login' | 'recover' | 'change';
 
@@ -81,9 +81,7 @@ export default function Login() {
           <h1>{titles[mode]}</h1>
 
           {!supabaseConfigured && (
-            <p className="form-msg is-error">
-              Faltan las variables de Supabase: el panel no puede funcionar.
-            </p>
+            <p className="form-msg is-error">{problemaDeCredenciales}</p>
           )}
 
           {msg && (

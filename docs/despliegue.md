@@ -16,13 +16,18 @@ Repositorio privado en GitHub, rama `main`. Cada push a `main` despliega solo.
    | Variable | Valor |
    |---|---|
    | `VITE_SUPABASE_URL` | `https://bfzvhoifbxbfpmbiyhsd.supabase.co` |
-   | `VITE_SUPABASE_ANON_KEY` | la clave `sb_publishable_…` |
+   | `VITE_SUPABASE_ANON_KEY` | la clave **completa**, copiada desde Supabase → Settings → API |
 
    > Estas variables se incrustan en el build: si se cambian después, hay que
    > volver a desplegar para que surtan efecto.
    >
    > La clave `service_role` **nunca** se pone aquí ni en ningún sitio del
    > frontend.
+   >
+   > Copia siempre la clave **entera** desde Supabase, nunca una versión
+   > abreviada con «…»: las credenciales viajan como cabeceras HTTP, que solo
+   > admiten ASCII, y un carácter tipográfico hace fallar todas las peticiones
+   > con un error ilegible.
 
 5. **Deploy**. El `vercel.json` del repositorio ya incluye el rewrite a
    `/index.html`, así que `/comunidad` o `/admin` no darán 404 al refrescar.

@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase, supabaseConfigured } from '../lib/supabase';
+import { problemaDeCredenciales, supabase, supabaseConfigured } from '../lib/supabase';
 
 interface AuthValue {
   session: Session | null;
@@ -69,9 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       loading,
       async login(email, password) {
-        if (!supabaseConfigured) {
-          return 'Faltan las credenciales de Supabase en este entorno.';
-        }
+        if (!supabaseConfigured) return problemaDeCredenciales;
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         return error ? mensajeDeError(error) : null;
       },
