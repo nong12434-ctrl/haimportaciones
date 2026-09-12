@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { getByPath, usePageContext } from '../../context/PageContent';
-import { uploadImage } from '../../lib/storageApi';
+import { ACCEPT_MEDIA, isVideoUrl, uploadMedia } from '../../lib/storageApi';
 
 interface Props {
   path: string;
@@ -11,10 +11,14 @@ interface Props {
 }
 
 /**
- * Hueco de imagen. En lectura muestra la foto (o un placeholder blanco si aún
- * no se ha subido ninguna). En edición permite sustituirla: la imagen se sube a
- * Storage en cuanto se elige el archivo, pero la URL no queda publicada hasta
- * que se pulsa "Guardar" en el editor.
+ * Hueco de foto o vídeo. En lectura muestra el archivo subido (o un placeholder
+ * blanco si aún no hay ninguno). En edición permite sustituirlo: el archivo se
+ * sube a Storage en cuanto se elige, pero la URL no queda publicada hasta que
+ * se pulsa "Guardar" en el editor.
+ *
+ * Foto y vídeo comparten el mismo campo del JSON: el tipo se deduce de la
+ * extensión de la URL, así que cambiar una foto por un vídeo (o al revés) no
+ * requiere tocar el contenido ni el código de la página.
  */
 export default function EditableMedia({ path, className, alt = '', ratio }: Props) {
   const { content, editing, slug, setField } = usePageContext<unknown>();
@@ -25,27 +29,45 @@ export default function EditableMedia({ path, className, alt = '', ratio }: Prop
   const [error, setError] = useState<string | null>(null);
 
   const style = ratio ? { aspectRatio: ratio } : undefined;
+  const esVideo = src ? isVideoUrl(src) : false;
 
   const handleFile = async (file: File | undefined) => {
     if (!file) return;
     setError(null);
     setBusy(true);
     try {
-      const url = await uploadImage(file, slug, path);
+      const url = await uploadMedia(file, slug, path);
       setField(path, url);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo subir la imagen.');
+      setError(e instanceof Error ? e.message : 'No se pudo subir el archivo.');
     } finally {
       setBusy(false);
       if (inputRef.current) inputRef.current.value = '';
     }
   };
 
-  const inner = src ? (
-    <img src={src} alt={alt} loading="lazy" />
-  ) : (
-    <div className="media-placeholder">{editing ? 'Sin foto' : ''}</div>
-  );
+  let inner;
+  if (!src) {
+    inner = <div className="media-placeholder">{editing ? 'Sin foto ni vídeo' : ''}</div>;
+  } else if (esVideo) {
+    inner = (
+      // `key` fuerza a recargar el reproductor al cambiar de archivo en el editor.
+      // En modo edición se ocultan los controles: el overlay de "Cambiar vídeo"
+      // los taparía y quedarían muertos al pulsarlos.
+      <video
+        key={src}
+        controls={!editing}
+        playsInline
+        preload="metadata"
+        aria-label={alt || undefined}
+      >
+        <source src={src} />
+        Tu navegador no puede reproducir este vídeo.
+      </video>
+    );
+  } else {
+    inner = <img src={src} alt={alt} loading="lazy" />;
+  }
 
   if (!editing) {
     return (
@@ -54,6 +76,8 @@ export default function EditableMedia({ path, className, alt = '', ratio }: Prop
       </div>
     );
   }
+
+  const etiqueta = src ? (esVideo ? 'Cambiar vídeo' : 'Cambiar foto') : 'Subir foto o vídeo';
 
   return (
     <div className={className}>
@@ -64,12 +88,8 @@ export default function EditableMedia({ path, className, alt = '', ratio }: Prop
             <span className="editor-status">Subiendo…</span>
           ) : (
             <>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => inputRef.current?.click()}
-              >
-                {src ? 'Cambiar foto' : 'Subir foto'}
+              <button type="button" className="btn" onClick={() => inputRef.current?.click()}>
+                {etiqueta}
               </button>
               {src && (
                 <button type="button" className="btn btn-ghost" onClick={() => setField(path, '')}>
@@ -83,7 +103,7 @@ export default function EditableMedia({ path, className, alt = '', ratio }: Prop
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept={ACCEPT_MEDIA}
         hidden
         onChange={(e) => void handleFile(e.target.files?.[0])}
       />

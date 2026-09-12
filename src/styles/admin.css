@@ -47,10 +47,14 @@
   overflow: hidden;
 }
 
-.media img {
+.media img,
+.media video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Fondo oscuro bajo el vídeo: si su proporción no coincide con la del hueco,
+     las bandas se ven del color de la web y no blancas. */
+  background: var(--bg-base);
 }
 
 .media-placeholder {

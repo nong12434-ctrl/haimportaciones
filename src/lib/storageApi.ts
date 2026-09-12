@@ -2,17 +2,45 @@ import { supabase, supabaseConfigured } from './supabase';
 
 export const IMAGE_BUCKET = 'imagenes';
 
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MB antes de redimensionar
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+
+/** Lo que acepta el selector de archivos del editor. */
+export const ACCEPT_MEDIA = [...IMAGE_TYPES, ...VIDEO_TYPES].join(',');
+
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB antes de redimensionar
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024; // 50 MB: límite por archivo de Supabase Storage
 const MAX_SIDE = 1600; // px del lado mayor tras redimensionar
 const JPEG_QUALITY = 0.85;
 
+const VIDEO_EXT: Record<string, string> = {
+  'video/mp4': 'mp4',
+  'video/webm': 'webm',
+  'video/quicktime': 'mov',
+};
+
+export function isVideoFile(file: File): boolean {
+  return VIDEO_TYPES.includes(file.type);
+}
+
+/** Deduce si una URL guardada apunta a un vídeo, por su extensión. */
+export function isVideoUrl(url: string): boolean {
+  return /\.(mp4|webm|mov)(\?|#|$)/i.test(url);
+}
+
 /** Devuelve un mensaje de error si el archivo no sirve, o `null` si es válido. */
-export function validateImageFile(file: File): string | null {
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return 'Formato no admitido. Usa JPG, PNG o WEBP.';
+export function validateMediaFile(file: File): string | null {
+  if (isVideoFile(file)) {
+    if (file.size > MAX_VIDEO_BYTES) {
+      return 'El vídeo pesa más de 50 MB. Compáctalo o recórtalo antes de subirlo.';
+    }
+    return null;
   }
-  if (file.size > MAX_BYTES) {
+
+  if (!IMAGE_TYPES.includes(file.type)) {
+    return 'Formato no admitido. Usa JPG, PNG o WEBP para fotos, y MP4 o WEBM para vídeos.';
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
     return 'La imagen pesa más de 10 MB. Usa una más ligera.';
   }
   return null;
@@ -50,25 +78,30 @@ export async function resizeImage(file: File): Promise<Blob> {
 }
 
 /**
- * Valida, redimensiona y sube la imagen. Devuelve la URL pública definitiva.
- * Lanza un Error con mensaje legible si algo falla.
+ * Valida y sube una foto o un vídeo. Las fotos se redimensionan en el
+ * navegador; los vídeos se suben tal cual (no se pueden recomprimir en
+ * cliente sin herramientas pesadas). Devuelve la URL pública definitiva.
  */
-export async function uploadImage(file: File, slug: string, campo: string): Promise<string> {
+export async function uploadMedia(file: File, slug: string, campo: string): Promise<string> {
   if (!supabaseConfigured) {
-    throw new Error('Supabase no está configurado: no se pueden subir imágenes.');
+    throw new Error('Supabase no está configurado: no se pueden subir archivos.');
   }
 
-  const invalid = validateImageFile(file);
+  const invalid = validateMediaFile(file);
   if (invalid) throw new Error(invalid);
 
-  const blob = await resizeImage(file);
+  const video = isVideoFile(file);
+  const body: Blob = video ? file : await resizeImage(file);
+  const ext = video ? VIDEO_EXT[file.type] : 'jpg';
+  const contentType = video ? file.type : 'image/jpeg';
+
   const id = crypto.randomUUID().slice(0, 8);
   const safeCampo = campo.replace(/[^a-zA-Z0-9]+/g, '-');
-  const path = `paginas/${slug}/${safeCampo}-${id}.jpg`;
+  const path = `paginas/${slug}/${safeCampo}-${id}.${ext}`;
 
   const { error } = await supabase.storage
     .from(IMAGE_BUCKET)
-    .upload(path, blob, { contentType: 'image/jpeg', upsert: false });
+    .upload(path, body, { contentType, upsert: false });
 
   if (error) throw new Error(error.message);
 

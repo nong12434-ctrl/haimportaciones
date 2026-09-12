@@ -10,9 +10,13 @@ Panel de Supabase → **Storage** → *New bucket*:
 | Nombre | Público | Para qué |
 |---|---|---|
 | `contenido-web` | **Sí** | Un `.json` por página (`home.json`, `comunidad.json`, `ajustes.json`) |
-| `imagenes` | **Sí** | Las fotos que sube el cliente desde `/admin` |
+| `imagenes` | **Sí** | Las fotos y vídeos que sube el cliente desde `/admin` |
 
 Marcar «Public bucket» en ambos: la web pública necesita leerlos sin login.
+
+En el bucket `imagenes`, dejar **sin restringir** los tipos MIME permitidos (o
+incluir `image/*` y `video/*`) y el límite de tamaño por archivo en 50 MB, que
+es lo que espera el editor para los vídeos.
 
 ## 2. Políticas de acceso
 

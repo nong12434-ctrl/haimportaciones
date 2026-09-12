@@ -29,12 +29,28 @@ un campo nuevo después de que el cliente ya hubiera editado la página).
 Servicios, «Qué incluye» y preguntas frecuentes son listas: desde el editor se
 pueden añadir, eliminar y reordenar elementos (botones ↑ ↓ ✕ y «+ Añadir…»).
 
-## Imágenes
+## Fotos y vídeos
 
-La foto se sube a Storage en cuanto se elige el archivo (redimensionada a
-1600px y convertida a JPEG al 85% en el navegador), pero **la URL no se publica
-hasta pulsar «Guardar»**. Si se cancela, la foto queda huérfana en el bucket sin
-afectar a la web.
+Todos los huecos de imagen admiten **foto o vídeo, indistintamente**. Se
+gestionan con el mismo componente (`EditableMedia`) y el mismo campo del JSON:
+el tipo se deduce de la extensión de la URL, así que sustituir una foto por un
+vídeo no requiere tocar el contenido ni el código de la página.
+
+| | Formatos | Límite | Tratamiento |
+|---|---|---|---|
+| Foto | JPG, PNG, WEBP | 10 MB | Se redimensiona a 1600px y se convierte a JPEG al 85% en el navegador |
+| Vídeo | MP4, WEBM, MOV | 50 MB | Se sube tal cual (no se puede recomprimir en el navegador) |
+
+MP4 (H.264) es el formato más seguro: lo reproducen todos los navegadores. El
+límite de 50 MB es el de Supabase Storage por archivo; para vídeos más largos,
+lo razonable es subirlos a YouTube o Vimeo y enlazarlos.
+
+El archivo se sube a Storage en cuanto se elige, pero **la URL no se publica
+hasta pulsar «Guardar»**. Si se cancela, el archivo queda huérfano en el bucket
+sin afectar a la web.
+
+En el editor los vídeos se muestran sin controles de reproducción, porque el
+botón de «Cambiar vídeo» los taparía. En la web pública salen con controles.
 
 ## Añadir una página nueva
 
