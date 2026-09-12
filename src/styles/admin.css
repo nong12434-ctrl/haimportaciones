@@ -1,0 +1,341 @@
+/* Panel de administración y componentes editables */
+
+/* ---------- Campos editables ---------- */
+
+.editable {
+  position: relative;
+  cursor: text;
+  border-radius: var(--radius-sm);
+  outline: 1px dashed var(--color-border-strong);
+  outline-offset: 3px;
+  transition: outline-color 160ms ease, background 160ms ease;
+}
+
+.editable:hover {
+  outline-color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.editable-input {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--text-secondary);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2);
+  resize: vertical;
+}
+
+.editable-empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ---------- Media (foto) ---------- */
+
+.media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: var(--bg-placeholder);
+  /* Valor propio, no `inherit`: así el redondeo no depende de en qué
+     contenedor esté la imagen (hero, tarjeta o bloque destacado). */
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9aa0a6;
+  font-size: var(--fs-tiny);
+}
+
+.media-editable {
+  outline: 1px dashed var(--color-border-strong);
+  outline-offset: 3px;
+}
+
+.media-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  background: rgba(11, 18, 23, 0.55);
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.media-editable:hover .media-overlay,
+.media-overlay.is-busy {
+  opacity: 1;
+}
+
+.media-error {
+  margin: var(--sp-2) 0 0;
+  color: var(--color-danger);
+  font-size: var(--fs-tiny);
+  text-align: center;
+}
+
+/* ---------- Listas editables ---------- */
+
+.list-item-tools {
+  display: flex;
+  gap: var(--sp-2);
+  justify-content: flex-end;
+  padding-top: var(--sp-2);
+  border-top: 1px dashed var(--color-border-subtle);
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--fs-small);
+  line-height: 1;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.icon-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.icon-btn-danger:hover:not(:disabled) {
+  background: rgba(255, 107, 107, 0.15);
+  color: var(--color-danger);
+}
+
+.list-add {
+  margin-top: var(--sp-4);
+  width: 100%;
+  padding: var(--sp-3);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+}
+
+.list-add:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+/* ---------- Barra del editor ---------- */
+
+.editor-bar {
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--content-pad);
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.editor-bar-title {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-bar .btn {
+  padding: var(--sp-2) var(--sp-4);
+  font-size: var(--fs-small);
+}
+
+.editor-status {
+  font-size: var(--fs-tiny);
+  color: var(--text-secondary);
+}
+
+.editor-status.is-error {
+  color: var(--color-danger);
+}
+
+.editor-status.is-ok {
+  color: var(--color-success);
+}
+
+.editor-canvas {
+  position: relative;
+}
+
+/* ---------- Login y listados de admin ---------- */
+
+.admin-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-8) var(--content-pad);
+}
+
+.admin-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-8);
+}
+
+.admin-card h1 {
+  margin: 0 0 var(--sp-6);
+  font-size: 1.375rem;
+  font-weight: var(--fw-bold);
+}
+
+.field {
+  display: grid;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+
+.field label {
+  font-size: var(--fs-tiny);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary);
+}
+
+.field input {
+  width: 100%;
+  padding: var(--sp-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.field input:focus {
+  outline: 2px solid var(--text-secondary);
+  outline-offset: -1px;
+}
+
+.form-msg {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-small);
+}
+
+.form-msg.is-error {
+  color: var(--color-danger);
+}
+
+.form-msg.is-ok {
+  color: var(--color-success);
+}
+
+.link-btn {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-small);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link-btn:hover {
+  color: var(--text-primary);
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--content-pad);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.admin-header h1 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: var(--fw-bold);
+}
+
+.admin-body {
+  padding: var(--sp-8) var(--content-pad);
+  max-width: var(--content-max);
+  margin-inline: auto;
+  width: 100%;
+}
+
+.page-grid {
+  display: grid;
+  gap: var(--sp-4);
+}
+
+.page-tile {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+  background: var(--bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  transition: background 160ms ease;
+}
+
+.page-tile:hover {
+  background: var(--bg-card-hover);
+}
+
+.page-tile-name {
+  font-weight: var(--fw-semibold);
+}
+
+.page-tile-desc {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-tiny);
+  color: var(--text-secondary);
+}
+
+@media (min-width: 768px) {
+  .page-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

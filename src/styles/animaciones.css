@@ -1,0 +1,57 @@
+/* Animaciones y transiciones — ver docs/animaciones.md */
+
+/* 9.1 Transición entre páginas — fade up */
+.page-fade {
+  animation: pageFadeUp 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pageFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 9.2 Revelado de bloques (acordeón, paneles) */
+.reveal-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 320ms ease, opacity 280ms ease;
+}
+
+.reveal-wrap.is-open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.reveal-inner {
+  overflow: hidden;
+}
+
+/* 9.3 FLIP — reordenar elementos de una lista */
+.flip-item {
+  will-change: transform;
+}
+
+.flip-item.is-animating {
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 9.6 Reducción de movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .page-fade {
+    animation: none;
+  }
+
+  .reveal-wrap,
+  .flip-item.is-animating,
+  .nav-drawer,
+  .navbar-toggle span {
+    transition: none;
+  }
+}
