@@ -31,6 +31,7 @@ Necesita un `.env.local` con las credenciales de Supabase (ver
 - [docs/supabase.md](docs/supabase.md) — buckets, políticas y usuario admin
 - [docs/contenido.md](docs/contenido.md) — cómo funciona el contenido editable
 - [docs/animaciones.md](docs/animaciones.md) — patrones de animación
+- [docs/despliegue.md](docs/despliegue.md) — Vercel, dominio y comprobaciones
 
 ## Despliegue
 
