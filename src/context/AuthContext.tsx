@@ -20,6 +20,28 @@ interface AuthValue {
 
 const AuthContext = createContext<AuthValue | null>(null);
 
+/**
+ * Traduce el error de Supabase a algo accionable. Antes todo se resumía en
+ * «email o contraseña incorrectos», lo que escondía causas muy distintas
+ * (usuario sin confirmar, límite de intentos, proyecto inalcanzable).
+ */
+function mensajeDeError(error: { code?: string; message: string }): string {
+  switch (error.code) {
+    case 'invalid_credentials':
+      return 'Email o contraseña incorrectos.';
+    case 'email_not_confirmed':
+      return 'El usuario existe pero no está confirmado. Confírmalo en Supabase → Authentication → Users.';
+    case 'over_request_rate_limit':
+    case 'over_email_send_rate_limit':
+      return 'Demasiados intentos seguidos. Espera un minuto y vuelve a probar.';
+    case 'user_not_found':
+      return 'No existe ningún usuario con ese email.';
+    default:
+      // Fallo de red, proyecto pausado o URL mal configurada.
+      return `No se pudo conectar con el servidor: ${error.message}`;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,8 +69,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       loading,
       async login(email, password) {
+        if (!supabaseConfigured) {
+          return 'Faltan las credenciales de Supabase en este entorno.';
+        }
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        return error ? 'Email o contraseña incorrectos.' : null;
+        return error ? mensajeDeError(error) : null;
       },
       async logout() {
         await supabase.auth.signOut();
