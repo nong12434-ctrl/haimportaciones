@@ -52,6 +52,25 @@ sin afectar a la web.
 En el editor los vídeos se muestran sin controles de reproducción, porque el
 botón de «Cambiar vídeo» los taparía. En la web pública salen con controles.
 
+### Encuadre
+
+Los huecos tienen una proporción fija, así que una foto vertical se recorta.
+El botón **Encuadrar** activa el modo de arrastre: se mueve la foto (o el
+vídeo) dentro del marco, con una cuadrícula de tercios como guía, hasta dejar
+visible la parte que interesa. «Centrar» vuelve al encuadre por defecto.
+
+El punto de encuadre se guarda **pegado a la URL**, como
+`…/foto.jpg#pos=50,20` (porcentajes horizontal y vertical), y se aplica con
+`object-position`. Ventajas de hacerlo así:
+
+- El contenido guardado antes de existir esta función sigue siendo válido: una
+  URL sin marca se centra, como siempre.
+- No hay que cambiar el tipo de las páginas ni sus funciones de merge.
+- Un encuadre centrado no escribe nada, así que las URLs se mantienen limpias.
+
+El fragmento `#…` no se envía al servidor, así que no afecta a la descarga del
+archivo.
+
 ## Añadir una página nueva
 
 Crear `content/{slug}.ts` + `{Slug}View.tsx` + `pages/{Slug}.tsx`, añadir la
