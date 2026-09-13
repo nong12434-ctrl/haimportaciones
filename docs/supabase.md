@@ -23,13 +23,11 @@ es lo que espera el editor para los vídeos.
 Público en lectura, solo el admin autenticado en escritura. En
 **SQL Editor**, ejecutar una vez:
 
-```sql
--- Lectura pública de ambos buckets
-create policy "lectura publica"
-  on storage.objects for select
-  to anon, authenticated
-  using (bucket_id in ('contenido-web', 'imagenes'));
+La lectura no necesita política: al ser buckets públicos, la web lee por la
+URL pública (`/object/public/…`), que no pasa por RLS. Solo hay que declarar
+la escritura.
 
+```sql
 -- Escritura solo para usuarios autenticados
 create policy "escritura autenticada"
   on storage.objects for insert

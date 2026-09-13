@@ -5,22 +5,29 @@ export const CONTENT_BUCKET = 'contenido-web';
 /**
  * Descarga el JSON de una página. Devuelve `null` si aún no se ha guardado
  * nunca (la vista usará entonces los valores por defecto).
+ *
+ * Se lee por la **URL pública** del bucket, no con `storage.download()`: ese
+ * método usa el endpoint autenticado, que exigiría una política de lectura
+ * para el rol anónimo. Al ser un bucket público, la URL pública la sirve
+ * cualquiera sin permisos — que es justo lo que necesita la web pública.
  */
 export async function fetchPageJson<T>(slug: string): Promise<T | null> {
   if (!supabaseConfigured) return null;
 
-  const { data, error } = await supabase.storage
-    .from(CONTENT_BUCKET)
-    // cache-buster: evita que el navegador sirva una versión antigua del JSON
-    // justo después de guardar.
-    .download(`${slug}.json?t=${Date.now()}`);
-
-  if (error || !data) return null;
+  const { data } = supabase.storage.from(CONTENT_BUCKET).getPublicUrl(`${slug}.json`);
 
   try {
-    return JSON.parse(await data.text()) as T;
+    // El parámetro de tiempo evita que el CDN sirva una versión antigua del
+    // JSON justo después de guardar.
+    const res = await fetch(`${data.publicUrl}?t=${Date.now()}`, { cache: 'no-store' });
+
+    // 404 = la página todavía no se ha guardado nunca. No es un error.
+    if (!res.ok) return null;
+
+    return (await res.json()) as T;
   } catch {
-    console.error(`[contentApi] El JSON de "${slug}" no es válido.`);
+    // Sin conexión, o el JSON está corrupto: la web cae a los valores por
+    // defecto en vez de quedarse en blanco.
     return null;
   }
 }
