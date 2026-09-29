@@ -2,8 +2,26 @@ import { createClient } from '@supabase/supabase-js';
 
 // `trim()` porque al pegar la clave en un panel (Vercel, .env) es fácil que
 // arrastre espacios o un salto de línea al final.
-const url = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim();
-const anonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim();
+/**
+ * Se acepta tanto el prefijo propio de Vite como el que crea la integración
+ * de Vercel con Supabase (`NEXT_PUBLIC_`), para que sirva cualquiera de los
+ * dos sin tener que duplicar las variables en el panel de Vercel.
+ */
+function leerEnv(...nombres: string[]): string | undefined {
+  const env = import.meta.env as Record<string, string | undefined>;
+  for (const nombre of nombres) {
+    const valor = env[nombre]?.trim();
+    if (valor) return valor;
+  }
+  return undefined;
+}
+
+const url = leerEnv('VITE_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL');
+const anonKey = leerEnv(
+  'VITE_SUPABASE_ANON_KEY',
+  'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+);
 
 /**
  * Las credenciales viajan como cabeceras HTTP, que solo admiten caracteres
@@ -18,7 +36,7 @@ function caracteresNoAscii(valor: string): string[] {
 
 function revisar(): string | null {
   if (!url || !anonKey) {
-    return 'Faltan VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY.';
+    return 'Faltan las variables VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY (o sus equivalentes NEXT_PUBLIC_).';
   }
 
   const raros = [...caracteresNoAscii(url), ...caracteresNoAscii(anonKey)];
